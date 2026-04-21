@@ -1,12 +1,12 @@
-import {useEffect, useState, Dispatch, SetStateAction, type Key} from 'react'
+import {useEffect, useState, type Dispatch, type SetStateAction} from 'react'
 
 import './App.css'
 import icon_moon from './assets/images/icon-moon.svg'
 import icon_sun from './assets/images/icon-sun.svg'
-import favicon from './assets/images/favicon-32x32.png'
+
 import logo_dark_theme from './assets/images/logo-dark-theme.svg'
 import logo_light_theme from './assets/images/logo-light-theme.svg'
-import * as url from "node:url";
+
 
 
 type HeaderProps = {
@@ -14,22 +14,7 @@ type HeaderProps = {
   toggleTheme: ()=> void;
 }
 
-function getSortedCharacterFrequency(
-    text: string,
-    excludeSpaces: boolean
-): Array<[string, number]> {
-    const frequency: Record<string, number> = {};
 
-    for (const char of text) {
-        if (excludeSpaces && /\s/.test(char)) {
-            continue;
-        }
-
-        frequency[char] = (frequency[char] || 0) + 1;
-    }
-
-    return Object.entries(frequency).sort((a, b) => b[1] - a[1]);
-}
 
 function Header({theme, toggleTheme}:HeaderProps){
   const logo_element = <div className="logo-product-name"><img src={theme === "light" ? logo_light_theme : logo_dark_theme} alt="logo"></img></div>;
@@ -115,7 +100,7 @@ function countCharacters(text: string, excludeSpaces: boolean): number {
     return excludeSpaces ? text.replace(/\s/g, "").length : text.length;
 }
 function Box({urlImg, amount, what_is_it, bg}:BoxProps){
-    let styles = {
+    const styles = {
         backgroundColor: bg
     };
     return (<div style={styles}  className={"box-wrapper"}>
@@ -138,19 +123,19 @@ function Statistic({state}:StatisticProps){
         <Box urlImg={"src/assets/images/pattern-sentence-count.svg"} amount={state.sentence_count} what_is_it={"Sentence Count"} bg={"#FE8159"}></Box>
     </div>)
 }
-interface formProps{
+interface FormProps{
     state: State;
     setState: Dispatch<SetStateAction<State>>;
 }
 
 
-function Form({ state, setStructure }: FormProps) {
+function Form({ state, setState }: FormProps) {
     function onExcludeSpacesChange(
         event: React.ChangeEvent<HTMLInputElement>
     ): void {
         const checked = event.currentTarget.checked;
 
-        setStructure((prev) => ({
+        setState((prev:State) => ({
             ...prev,
             exclude_spaces: checked,
             total_characters: countCharacters(prev.text, checked),
@@ -163,7 +148,7 @@ function Form({ state, setStructure }: FormProps) {
     ): void {
         const checked = event.currentTarget.checked;
 
-        setStructure((prev) => ({
+        setState((prev:State) => ({
             ...prev,
             is_character_limit_enabled: checked,
         }));
@@ -174,7 +159,7 @@ function Form({ state, setStructure }: FormProps) {
     ): void {
         const value = event.currentTarget.value;
 
-        setStructure((prev) => ({
+        setState((prev:State) => ({
             ...prev,
             character_limit_number: value === "" ? 0 : Number(value),
         }));
@@ -187,11 +172,7 @@ function Form({ state, setStructure }: FormProps) {
     );
 
 
-    const exceeded = isLimitExceeded(
-        state.total_characters,
-        state.is_character_limit_enabled,
-        state.character_limit_number
-    );
+
 
     return (
         <div>
@@ -277,9 +258,6 @@ interface State {
     is_limit_exceeded: boolean;
 }
 
-interface  setStructureProps{
-    setStructure: Dispatch<SetStateAction<State>>;
-}
 
 
 function countCharacterFrequency(
@@ -321,7 +299,7 @@ function CharacterProgress({
 
             <progress value={count} max={totalCharacters || 1}></progress>
 
-            <p class="progress-percentage">
+            <p className="progress-percentage">
                 {count} ({percent.toFixed(1)}%)
             </p>
         </div>
@@ -378,17 +356,7 @@ function CharacterFrequencyList({
     );
 }
 
-function isLimitExceeded(
-    totalCharacters: number,
-    isEnabled: boolean,
-    limit: number
-): boolean {
-    if (!isEnabled) {
-        return false;
-    }
 
-    return totalCharacters > limit;
-}
 
 
 function getRemainingCharacters(
@@ -442,7 +410,7 @@ function App() {
           <Heading>
           </Heading>
           <TextArea state={structure} setStructure={setStructure} />
-          <Form state={structure} setStructure={setStructure} />
+          <Form state={structure} setState={setStructure} />
           <Statistic state={structure}></Statistic>
           <CharacterFrequencyList
               characterFrequency={structure.character_frequency}
